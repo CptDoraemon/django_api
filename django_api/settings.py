@@ -25,7 +25,9 @@ SECRET_KEY = 'ou*o9(m&8@8k6u8h0x*rj2ta%ob!5^22x6q5*z*&da6xh2v%4z'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'django-api-xiaoxihome.herokuapp.com'
+]
 
 
 # Application definition
