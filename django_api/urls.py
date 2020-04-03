@@ -20,5 +20,6 @@ from rest_framework import routers
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('posts.urls')),
+    path('api/discussion_board/post/', include('posts.urls')),
+    path('api/discussion_board/account/', include('account.urls')),
 ]

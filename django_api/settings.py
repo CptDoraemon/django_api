@@ -26,7 +26,9 @@ SECRET_KEY = 'ou*o9(m&8@8k6u8h0x*rj2ta%ob!5^22x6q5*z*&da6xh2v%4z'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'django-api-xiaoxihome.herokuapp.com'
+    'django-api-xiaoxihome.herokuapp.com',
+    '127.0.0.1',
+    '*.postwoman.io'
 ]
 
 
@@ -41,7 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     # 'tutorial_snippets.apps.SnippetsConfig',
-    'posts.apps.PostsConfig'
+    'posts.apps.PostsConfig',
+    'account'
 ]
 
 MIDDLEWARE = [
@@ -131,7 +134,12 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-#     'PAGE_SIZE': 10
-# }
+REST_FRAMEWORK = {
+    # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # 'PAGE_SIZE': 10
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+    ]
+}
+
+AUTH_USER_MODEL = 'account.Account'
