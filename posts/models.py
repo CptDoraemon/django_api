@@ -11,7 +11,6 @@ class Post(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    slug = models.SlugField(blank=True, unique=True)
 
     def __str__(self):
         return self.title
@@ -22,9 +21,9 @@ class Post(models.Model):
 #     instance.image.delete(False)
 
 
-def pre_save_post_receiver(sender, instance, *args, **kwargs):
-    if not instance.slug:
-        instance.slug = slugify(instance.owner.username + '-' + instance.title)
-
-
-pre_save.connect(pre_save_post_receiver, sender=Post)
+# def pre_save_post_receiver(sender, instance, *args, **kwargs):
+#     if not instance.slug:
+#         instance.slug = slugify(instance.owner.username + '-' + instance.title)
+#
+#
+# pre_save.connect(pre_save_post_receiver, sender=Post)
