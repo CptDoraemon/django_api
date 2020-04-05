@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from account.models import Account
 from response_templates.templates import error_template, success_template
+from rest_framework import serializers
 
 
-class AccountSerializer(serializers.ModelSerializer):
+class RegistrationSerializer(serializers.ModelSerializer):
 
     confirm_password = serializers.CharField(style={'input_type': 'password'}, write_only=True)
 
@@ -23,9 +24,27 @@ class AccountSerializer(serializers.ModelSerializer):
         confirm_password = self.validated_data['confirm_password']
 
         if password != confirm_password:
-            raise serializers.ValidationError(error_template('passwords don\'t match'))
+            raise serializers.ValidationError('passwords don\'t match')
 
         account.set_password(password)
         account.save()
         return account
+
+
+class LoginSerializer(serializers.Serializer):
+
+    email = serializers.EmailField(max_length=50)
+    password = serializers.CharField(max_length=20)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+
+    email = serializers.EmailField(max_length=50)
+    old_password = serializers.CharField(max_length=20)
+    new_password = serializers.CharField(max_length=20)
+    confirm_new_password = serializers.CharField(max_length=20)
+
+
+
+
 
