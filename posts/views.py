@@ -1,82 +1,72 @@
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
 from posts.models import Post
-from account.models import Account
-from posts.serializers import PostsSerializer
+from posts.serializers import PostCreationSerializer, AllPostsListSerializer
 from rest_framework import generics
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin
-from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from response_templates.templates import success_template, error_template
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def post_creation_view(request):
+    serializer = PostCreationSerializer(data=request.data)
+    if serializer.is_valid():
+        user = request.user
+        post = Post(
+            title=serializer.validated_data['title'],
+            content=serializer.validated_data['content'],
+            owner=user
+        )
+        post.save()
+        return Response(success_template(data={'post_id': post.pk}), status=status.HTTP_200_OK)
+    else:
+        return Response(error_template(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def post_edit_view(request, post_id):
+    serializer = PostCreationSerializer(data=request.data)
+    if serializer.is_valid():
+        user = request.user
+        try:
+            post = Post.objects.get(pk=post_id)
+        except ObjectDoesNotExist:
+            return Response(error_template('not authorized'), status=status.HTTP_403_FORBIDDEN)
+
+        if user != post.owner:
+            return Response(error_template('not authorized'), status=status.HTTP_403_FORBIDDEN)
+
+        post.title = serializer.validated_data['title']
+        post.content = serializer.validated_data['content']
+        post.save()
+        return Response(success_template(data={'post_id': post.pk}), status=status.HTTP_200_OK)
+    else:
+        return Response(error_template(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def post_deletion_view(request, post_id):
+    user = request.user
+    try:
+        post = Post.objects.get(pk=post_id)
+    except ObjectDoesNotExist:
+        return Response(error_template('not authorized'), status=status.HTTP_403_FORBIDDEN)
+
+    if user != post.owner:
+        return Response(error_template('not authorized'), status=status.HTTP_403_FORBIDDEN)
+
+    post.is_deleted = True
+    post.save()
+    return Response(success_template(), status=status.HTTP_200_OK)
 
 
 class AllPostsView(generics.ListAPIView):
     queryset = Post.objects.all()
-    serializer_class = PostsSerializer
-    # permission_classes = [IsAdminUser]
+    serializer_class = AllPostsListSerializer
 
 
-class CreatePostView(generics.CreateAPIView):
-    # queryset = Post.objects.all()
-    serializer_class = PostsSerializer
-
-
-class EditPostView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostsSerializer
-    lookup_fields = ['pk']
-    # lookup_url_kwarg = ['pk']
-
-
-# @api_view(['GET'])
-# def detail_post_view(request, slug):
-#     try:
-#         post = Post.objects.get(slug=slug)
-#     except Post.DoesNotExist:
-#         return Response(status=status.HTTP_404_NOT_FOUND)
-#
-#     serializer = PostsSerializer(post)
-#     return Response(serializer.data)
-#
-#
-# @api_view(['POST'])
-# def update_post_view(request, slug):
-#     try:
-#         post = Post.objects.get(slug=slug)
-#     except Post.DoesNotExist:
-#         return Response(status=status.HTTP_404_NOT_FOUND)
-#
-#     serializer = PostsSerializer(post, data=request.data)
-#     data = {}
-#     if serializer.is_valid():
-#         serializer.save()
-#         data["success"] = "update successful"
-#         return Response(data=data)
-#     return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
-#
-#
-# @api_view(['DELETE'])
-# def delete_post_view(request, slug):
-#     try:
-#         post = Post.objects.get(slug=slug)
-#     except Post.DoesNotExist:
-#         return Response(status=status.HTTP_404_NOT_FOUND)
-#
-#     operation = post.delete(slug=slug)
-#     data = {}
-#     if operation:
-#         data["success"] = "delete successful"
-#     else:
-#         data["failure"] = "delete failed"
-#     return Response(data=data)
-#
-#
-# @api_view(['PUT'])
-# def create_post_view(request):
-#     account = Account.objects.get(pk=1)
-#     post = Post(owner=account)
-#
-#     serializer = PostsSerializer(post, data=request.data)
-#     data = {}
-#     if serializer.is_valid():
-#         serializer.save()
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-#     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
