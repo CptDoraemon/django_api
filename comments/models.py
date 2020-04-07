@@ -10,8 +10,8 @@ class Comment(models.Model):
     parent_post = models.ForeignKey(Post, on_delete=models.CASCADE)
     parent_comment = models.ForeignKey('self', on_delete=models.CASCADE, null=True)
     created = models.DateTimeField(auto_now_add=True)
-    edited = models.DateTimeField(auto_now=True)
+    edited = models.DateTimeField(auto_now_add=True)
     is_deleted = models.BooleanField(default=False)
 
-    # def __str__(self):
-    #     return self.title
+    def __str__(self):
+        return self.content

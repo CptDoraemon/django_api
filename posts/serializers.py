@@ -9,7 +9,7 @@ class PostCreationSerializer(serializers.ModelSerializer):
         # owner = serializers.ReadOnlyField(source='owner.username')
 
 
-class AllPostsListSerializer(serializers.ModelSerializer):
+class AllPostsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = "__all__"

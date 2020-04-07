@@ -45,7 +45,8 @@ INSTALLED_APPS = [
     'rest_framework',
     # 'tutorial_snippets.apps.SnippetsConfig',
     'posts.apps.PostsConfig',
-    'account'
+    'account',
+    'comments'
 ]
 
 MIDDLEWARE = [

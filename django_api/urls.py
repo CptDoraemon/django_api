@@ -27,4 +27,5 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/discussion_board/post/', include('posts.urls')),
     path('api/discussion_board/account/', include('account.urls')),
+    path('api/discussion_board/comment/', include('comments.urls')),
 ]
