@@ -4,7 +4,7 @@ from response_templates.templates import success_template, error_template
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
-from user_actions.serializers import LikeUpdateSerializer, TARGET_TYPE_CHOICES
+from user_actions.serializers import LikeUpdateSerializer, SaveUpdateSerializer, TARGET_TYPE_CHOICES
 from user_actions.models import UserActions
 from posts.models import Post
 from comments.models import Comment
@@ -12,7 +12,13 @@ from comments.serializers import AllCommentsSerializer
 from posts.serializers import AllPostsSerializer
 
 
-def toggle_like(action, like_field, dislike_field, target):
+def _toggle_like(action, user_action_instance, target, target_type):
+    like_field = user_action_instance.liked_comments
+    dislike_field = user_action_instance.disliked_comments
+    if target_type == TARGET_TYPE_CHOICES['post']:
+        like_field = user_action_instance.liked_posts
+        dislike_field = user_action_instance.disliked_posts
+
     if action == 1:
         # like a target
         # cancel dislike first if applicable
@@ -37,15 +43,42 @@ def toggle_like(action, like_field, dislike_field, target):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def like_update_view(request):
-    serializer = LikeUpdateSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(error_template(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
+    return _update_generic_view(request, LikeUpdateSerializer, _toggle_like)
+
+
+def _toggle_save(action, user_action_instance, target, target_type):
+    saved_field = user_action_instance.saved_comments
+    if target_type == TARGET_TYPE_CHOICES['post']:
+        saved_field = user_action_instance.saved_posts
+
+    if action == 1:
+        # save a target
+        # cancel dislike first if applicable
+        # TODO verify if duplicate object can be pushed
+        saved_field.add(target)
+    elif action == 0:
+        # neutral a target
+        # cancel saved if applicable
+        if target in saved_field.all():
+            saved_field.remove(target)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def save_update_view(request):
+    return _update_generic_view(request, SaveUpdateSerializer, _toggle_save)
+
+
+def _update_generic_view(request, serializer, toggle_handler):
+    serialized = serializer(data=request.data)
+    if not serialized.is_valid():
+        return Response(error_template(serialized.errors), status=status.HTTP_400_BAD_REQUEST)
 
     user = request.user
     this_user_action = UserActions.objects.get_or_create(user=user)[0]
-    target_type = serializer.validated_data['target_type']
-    action = serializer.validated_data['action']
-    target_id = serializer.validated_data['target_id']
+    target_type = serialized.validated_data['target_type']
+    action = serialized.validated_data['action']
+    target_id = serialized.validated_data['target_id']
 
     # get target comment / post
     target = None
@@ -57,21 +90,8 @@ def like_update_view(request):
     except ObjectDoesNotExist:
         return Response(error_template('no such target_id'), status=status.HTTP_404_NOT_FOUND)
 
-    # toggle like
-    if target_type == TARGET_TYPE_CHOICES['comment']:
-        toggle_like(
-            action,
-            this_user_action.liked_comments,
-            this_user_action.disliked_comments,
-            target
-        )
-    elif target_type == TARGET_TYPE_CHOICES['post']:
-        toggle_like(
-            action,
-            this_user_action.liked_posts,
-            this_user_action.disliked_posts,
-            target
-        )
+    # do toggle
+    toggle_handler(action, this_user_action, target, target_type)
 
     return Response(success_template(), status=status.HTTP_200_OK)
 
@@ -79,43 +99,48 @@ def like_update_view(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def all_liked_view(request):
-    user = request.user
-    this_user_action = UserActions.objects.get_or_create(user=user)[0]
-
-    category = request.GET.get('category')
-    data = {}
-    if category == 'comment':
-        comments = AllCommentsSerializer(this_user_action.liked_comments, many=True).data
-        data['comments'] = comments
-    elif category == 'post':
-        posts = AllPostsSerializer(this_user_action.liked_posts, many=True).data
-        data['posts'] = posts
-    else:
-        comments = AllCommentsSerializer(this_user_action.liked_comments, many=True).data
-        posts = AllPostsSerializer(this_user_action.liked_posts, many=True).data
-        data['comments'] = comments
-        data['posts'] = posts
-
-    return Response(success_template(data=data), status=status.HTTP_200_OK)
+    return _all_generic_view(
+        request,
+        'liked_comments',
+        'liked_posts'
+    )
 
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def all_disliked_view(request):
+    return _all_generic_view(
+        request,
+        'disliked_comments',
+        'disliked_posts'
+    )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def all_saved_view(request):
+    return _all_generic_view(
+        request,
+        'saved_comments',
+        'saved_posts'
+    )
+
+
+def _all_generic_view(request, comment_field_string, post_field_string):
     user = request.user
     this_user_action = UserActions.objects.get_or_create(user=user)[0]
 
     category = request.GET.get('category')
     data = {}
     if category == 'comment':
-        comments = AllCommentsSerializer(this_user_action.disliked_comments, many=True).data
+        comments = AllCommentsSerializer(getattr(this_user_action, comment_field_string), many=True).data
         data['comments'] = comments
     elif category == 'post':
-        posts = AllPostsSerializer(this_user_action.disliked_posts, many=True).data
+        posts = AllPostsSerializer(getattr(this_user_action, post_field_string), many=True).data
         data['posts'] = posts
     else:
-        comments = AllCommentsSerializer(this_user_action.disliked_comments, many=True).data
-        posts = AllPostsSerializer(this_user_action.disliked_posts, many=True).data
+        comments = AllCommentsSerializer(getattr(this_user_action, comment_field_string), many=True).data
+        posts = AllPostsSerializer(getattr(this_user_action, post_field_string), many=True).data
         data['comments'] = comments
         data['posts'] = posts
 
