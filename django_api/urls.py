@@ -28,4 +28,5 @@ urlpatterns = [
     path('api/discussion_board/post/', include('posts.urls')),
     path('api/discussion_board/account/', include('account.urls')),
     path('api/discussion_board/comment/', include('comments.urls')),
+    path('api/discussion_board/user_actions/', include('user_actions.urls')),
 ]

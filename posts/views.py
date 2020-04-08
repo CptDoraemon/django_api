@@ -3,11 +3,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from posts.models import Post
 from posts.serializers import PostCreationSerializer, AllPostsSerializer
-from rest_framework import generics
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from response_templates.templates import success_template, error_template
-from comments.models import Comment
 from comments.serializers import AllCommentsSerializer
 
 
@@ -70,37 +68,25 @@ def post_deletion_view(request, post_id):
 @api_view(['GET'])
 def all_posts_view(request):
     all_posts = Post.objects.all()
-    all_posts_serializer = AllPostsSerializer(all_posts, many=True)
-    data = all_posts_serializer.data
-    for post in data:
+    all_posts_data = []
+    for post in all_posts:
         # get all comments for this post
-        all_comments = Comment.objects.filter(parent_post=post['id'])
-        all_comments_serializer = AllCommentsSerializer(all_comments, many=True)
-        comments = all_comments_serializer.data
+        comments = post.comment_set.filter(parent_comment=None).order_by('created')
+        post_data = AllPostsSerializer(post).data
 
-        # filter out first level comments
-        first_level_comments = {}
+        comments_data = []
+        # get sub comments for this comment
         for comment in comments:
-            if comment['parent_comment'] is None:
-                comment['comments'] = []
-                first_level_comments[comment['id']] = comment
+            sub_comments = comment.comment_set.all().order_by('created')
+            comment_data = AllCommentsSerializer(comment).data
+            comment_data['comments'] = []
+            sub_comments_data = AllCommentsSerializer(sub_comments, many=True).data
+            comment_data['comments'].append(sub_comments_data)
+            comments_data.append(comment_data)
 
-        # append second level comments to first level comments
-        for comment in comments:
-            parent_comment_id = comment['parent_comment']
-            if parent_comment_id is not None:
-                if parent_comment_id in first_level_comments:
-                    first_level_comments[parent_comment_id]['comments'].append(comment)
+        post_data['comments'] = comments_data
+        all_posts_data.append(post_data)
 
-        first_level_comments = list(first_level_comments.values())
-
-        # sort comments by create date
-        # for first_level_comment in first_level_comments:
-        #     first_level_comment['comments'] = first_level_comment['comments'].sort(key=lambda obj: obj['created'])
-        # first_level_comments.sort(key=lambda obj: obj['created'])
-
-        post['comments'] = first_level_comments
-
-    return Response(success_template(data), status=status.HTTP_200_OK)
+    return Response(success_template(data=all_posts_data), status=status.HTTP_200_OK)
 
 

@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     # 'tutorial_snippets.apps.SnippetsConfig',
     'posts.apps.PostsConfig',
     'account',
-    'comments'
+    'comments',
+    'user_actions'
 ]
 
 MIDDLEWARE = [
