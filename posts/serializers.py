@@ -10,7 +10,7 @@ class PostCreationSerializer(serializers.ModelSerializer):
         # owner = serializers.ReadOnlyField(source='owner.username')
 
 
-class AllPostsBaseSerializer(serializers.ModelSerializer):
+class PostBaseSerializer(serializers.ModelSerializer):
     owner = AccountBaseInfoSerializer()
     likes = serializers.IntegerField(source='liked_by.count', read_only=True)
     dislikes = serializers.IntegerField(source='disliked_by.count', read_only=True)
@@ -21,7 +21,7 @@ class AllPostsBaseSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class AllPostsWithLoginSerializer(AllPostsBaseSerializer):
+class PostWithLoginSerializer(PostBaseSerializer):
     is_liked = serializers.SerializerMethodField()
     is_saved = serializers.SerializerMethodField()
 
@@ -35,10 +35,6 @@ class AllPostsWithLoginSerializer(AllPostsBaseSerializer):
 
     def get_is_saved(self, obj):
         return obj.saved_by.filter(pk=self.context.get('user').pk).exists()
-
-    class Meta:
-        model = Post
-        fields = "__all__"
 
 
 class PostDetailBaseSerializer(serializers.ModelSerializer):

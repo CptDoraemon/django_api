@@ -2,12 +2,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
 from posts.models import Post
-from posts.serializers import PostCreationSerializer, AllPostsBaseSerializer, AllPostsWithLoginSerializer
+from comments.models import Comment
+from posts.serializers import PostCreationSerializer, PostBaseSerializer, PostWithLoginSerializer
+from comments.serializers import NestedCommentsBaseSerializer, NestedCommentsWithLoginSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from response_templates.templates import success_template, error_template
-from comments.serializers import AllCommentsSerializer
-from rest_framework_simplejwt import authentication
 
 
 @api_view(['POST'])
@@ -70,9 +70,9 @@ def post_deletion_view(request, post_id):
 def all_posts_view(request):
     all_posts = Post.objects.filter(is_deleted=False)
     all_posts_data = (
-        AllPostsBaseSerializer(all_posts, many=True).data
+        PostBaseSerializer(all_posts, many=True).data
         if request.user.is_anonymous
-        else AllPostsWithLoginSerializer(all_posts, many=True, context={"user": request.user}).data
+        else PostWithLoginSerializer(all_posts, many=True, context={"user": request.user}).data
     )
 
     # for post in all_posts:
@@ -96,5 +96,24 @@ def all_posts_view(request):
     return Response(success_template(data=all_posts_data), status=status.HTTP_200_OK)
 
 
-# @api_view(['GET'])
-# def post_detail_view(request):
+@api_view(['GET'])
+def post_detail_view(request, pk):
+    if not Post.objects.filter(pk=pk).exists():
+        return Response(error_template('no such post'), status=status.HTTP_404_NOT_FOUND)
+
+    post = Post.objects.get(pk=pk)
+    data = (
+        PostBaseSerializer(post).data
+        if request.user.is_anonymous
+        else PostWithLoginSerializer(post, context={"user": request.user}).data
+    )
+
+    first_level_comments = Comment.objects.filter(parent_comment=None, parent_post=pk)
+    comments_data = (
+        NestedCommentsBaseSerializer(first_level_comments, many=True).data
+        if request.user.is_anonymous
+        else NestedCommentsWithLoginSerializer(first_level_comments, many=True, context={"user": request.user}).data
+    )
+    data['comments'] = comments_data
+
+    return Response(success_template(data=data), status=status.HTTP_200_OK)
