@@ -16,7 +16,6 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
-
 # @receiver(post_delete, sender=Post)
 # def submission_delete(sender, instance):
 #     instance.image.delete(False)

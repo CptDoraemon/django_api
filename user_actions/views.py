@@ -9,7 +9,7 @@ from user_actions.models import UserActions
 from posts.models import Post
 from comments.models import Comment
 from comments.serializers import AllCommentsSerializer
-from posts.serializers import AllPostsSerializer
+from posts.serializers import PostDetailBaseSerializer
 
 
 def _toggle_like(action, user_action_instance, target, target_type):
@@ -26,7 +26,7 @@ def _toggle_like(action, user_action_instance, target, target_type):
             dislike_field.remove(target)
         like_field.add(target)
     elif action == 0:
-        # neutral a target
+        # neutralize a target
         # cancel dislike and like if applicable
         if target in dislike_field.all():
             dislike_field.remove(target)
@@ -54,10 +54,9 @@ def _toggle_save(action, user_action_instance, target, target_type):
     if action == 1:
         # save a target
         # cancel dislike first if applicable
-        # TODO verify if duplicate object can be pushed
         saved_field.add(target)
     elif action == 0:
-        # neutral a target
+        # neutralize a target
         # cancel saved if applicable
         if target in saved_field.all():
             saved_field.remove(target)
@@ -136,11 +135,11 @@ def _all_generic_view(request, comment_field_string, post_field_string):
         comments = AllCommentsSerializer(getattr(this_user_action, comment_field_string), many=True).data
         data['comments'] = comments
     elif category == 'post':
-        posts = AllPostsSerializer(getattr(this_user_action, post_field_string), many=True).data
+        posts = PostDetailBaseSerializer(getattr(this_user_action, post_field_string), many=True).data
         data['posts'] = posts
     else:
         comments = AllCommentsSerializer(getattr(this_user_action, comment_field_string), many=True).data
-        posts = AllPostsSerializer(getattr(this_user_action, post_field_string), many=True).data
+        posts = PostDetailBaseSerializer(getattr(this_user_action, post_field_string), many=True).data
         data['comments'] = comments
         data['posts'] = posts
 

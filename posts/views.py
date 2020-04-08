@@ -2,11 +2,12 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
 from posts.models import Post
-from posts.serializers import PostCreationSerializer, AllPostsSerializer
+from posts.serializers import PostCreationSerializer, AllPostsBaseSerializer, AllPostsWithLoginSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from response_templates.templates import success_template, error_template
 from comments.serializers import AllCommentsSerializer
+from rest_framework_simplejwt import authentication
 
 
 @api_view(['POST'])
@@ -67,26 +68,33 @@ def post_deletion_view(request, post_id):
 
 @api_view(['GET'])
 def all_posts_view(request):
-    all_posts = Post.objects.all()
-    all_posts_data = []
-    for post in all_posts:
-        # get all comments for this post
-        comments = post.comment_set.filter(parent_comment=None).order_by('created')
-        post_data = AllPostsSerializer(post).data
+    all_posts = Post.objects.filter(is_deleted=False)
+    all_posts_data = (
+        AllPostsBaseSerializer(all_posts, many=True).data
+        if request.user.is_anonymous
+        else AllPostsWithLoginSerializer(all_posts, many=True, context={"user": request.user}).data
+    )
 
-        comments_data = []
-        # get sub comments for this comment
-        for comment in comments:
-            sub_comments = comment.comment_set.all().order_by('created')
-            comment_data = AllCommentsSerializer(comment).data
-            comment_data['comments'] = []
-            sub_comments_data = AllCommentsSerializer(sub_comments, many=True).data
-            comment_data['comments'].append(sub_comments_data)
-            comments_data.append(comment_data)
-
-        post_data['comments'] = comments_data
-        all_posts_data.append(post_data)
+    # for post in all_posts:
+    #     # get all comments for this post
+    #     comments = post.comment_set.filter(parent_comment=None).order_by('created')
+    #     post_data = AllPostsSerializer(post).data
+    #
+    #     comments_data = []
+    #     # get sub comments for this comment
+    #     for comment in comments:
+    #         sub_comments = comment.comment_set.all().order_by('created')
+    #         comment_data = AllCommentsSerializer(comment).data
+    #         comment_data['comments'] = []
+    #         sub_comments_data = AllCommentsSerializer(sub_comments, many=True).data
+    #         comment_data['comments'].append(sub_comments_data)
+    #         comments_data.append(comment_data)
+    #
+    #     post_data['comments'] = comments_data
+    #     all_posts_data.append(post_data)
 
     return Response(success_template(data=all_posts_data), status=status.HTTP_200_OK)
 
 
+# @api_view(['GET'])
+# def post_detail_view(request):
