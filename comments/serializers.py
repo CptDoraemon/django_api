@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from comments.models import Comment
-
+from account.serializer import AccountBaseInfoSerializer
 
 class CommentCreationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,6 +24,7 @@ class AllCommentsSerializer(serializers.ModelSerializer):
 
 
 class _CommentBaseSerializer(serializers.ModelSerializer):
+    owner = AccountBaseInfoSerializer()
     likes = serializers.IntegerField(source='liked_by.count', read_only=True)
     dislikes = serializers.IntegerField(source='disliked_by.count', read_only=True)
 
