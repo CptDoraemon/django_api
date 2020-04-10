@@ -31,7 +31,8 @@ DEBUG = os.getenv("DEBUG") == 'True'
 ALLOWED_HOSTS = [
     'django-api-xiaoxihome.herokuapp.com',
     '127.0.0.1:8000',
-    '*.postwoman.io'
+    '*.postwoman.io',
+    'localhost:3000'
 ]
 
 

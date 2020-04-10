@@ -1,0 +1,327 @@
+openapi: 3.0.2
+info:
+  title: ''
+  version: ''
+paths:
+  /api/discussion_board/post/all/:
+    get:
+      operationId: listall_posts_views
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/discussion_board/post/{id}/:
+    get:
+      operationId: Retrievepost_detail_view
+      description: ''
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/discussion_board/comment/all/:
+    get:
+      operationId: listComments
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id:
+                      type: integer
+                      readOnly: true
+                    content:
+                      type: string
+                      minLength: 5
+                      maxLength: 2000
+                    created:
+                      type: string
+                      format: date-time
+                      readOnly: true
+                    edited:
+                      type: string
+                      format: date-time
+                      readOnly: true
+                    is_deleted:
+                      type: boolean
+                    owner:
+                      type: integer
+                    parent_post:
+                      type: integer
+                    parent_comment:
+                      type: integer
+                      nullable: true
+                  required:
+                  - content
+                  - owner
+                  - parent_post
+          description: ''
+  /api/discussion_board/user_actions/all_liked/:
+    get:
+      operationId: listall_liked_views
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/discussion_board/user_actions/all_disliked/:
+    get:
+      operationId: listall_disliked_views
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/discussion_board/user_actions/all_saved/:
+    get:
+      operationId: listall_saved_views
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {}
+          description: ''
+  /api/discussion_board/post/create/:
+    post:
+      operationId: Createpost_creation_view
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/discussion_board/post/edit/{post_id}/:
+    post:
+      operationId: Createpost_edit_view
+      description: ''
+      parameters:
+      - name: post_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/discussion_board/post/delete/{post_id}/:
+    post:
+      operationId: Createpost_deletion_view
+      description: ''
+      parameters:
+      - name: post_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/discussion_board/account/register/:
+    post:
+      operationId: Createregistration_view
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/discussion_board/account/login/:
+    post:
+      operationId: CreateTokenObtainPair
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id001
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                  writeOnly: true
+              required:
+              - email
+              - password
+          application/x-www-form-urlencoded:
+            schema: *id001
+          multipart/form-data:
+            schema: *id001
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  email:
+                    type: string
+                required:
+                - email
+          description: ''
+  /api/discussion_board/account/refresh/:
+    post:
+      operationId: CreateTokenObtainPair
+      description: ''
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema: &id002
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                  writeOnly: true
+              required:
+              - email
+              - password
+          application/x-www-form-urlencoded:
+            schema: *id002
+          multipart/form-data:
+            schema: *id002
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  email:
+                    type: string
+                required:
+                - email
+          description: ''
+  /api/discussion_board/account/logout/:
+    post:
+      operationId: Createlogout_view
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/discussion_board/account/reset_password/:
+    post:
+      operationId: Createreset_password_view
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/discussion_board/comment/create/:
+    post:
+      operationId: Createcomment_creation_view
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/discussion_board/comment/edit/{comment_id}/:
+    post:
+      operationId: Createcomment_edit_view
+      description: ''
+      parameters:
+      - name: comment_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/discussion_board/comment/delete/{comment_id}/:
+    post:
+      operationId: Createcomment_deletion_view
+      description: ''
+      parameters:
+      - name: comment_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/discussion_board/user_actions/like/:
+    post:
+      operationId: Createlike_update_view
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+  /api/discussion_board/user_actions/save/:
+    post:
+      operationId: Createsave_update_view
+      description: ''
+      parameters: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: {}
+          description: ''
