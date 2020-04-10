@@ -36,4 +36,10 @@ def custom_exception_handler(exc, context):
         except KeyError:
             response.data = error_template('Authentication Failed')
 
+    # rest cases:
+    try:
+        response.data = error_template(response.data['detail'])
+    except KeyError:
+        pass
+
     return response
