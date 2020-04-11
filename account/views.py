@@ -6,6 +6,7 @@ from response_templates.templates import success_template, error_template
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.permissions import IsAuthenticated
 from account.models import Account
+from django.middleware.csrf import get_token
 
 
 @api_view(['POST'])
@@ -40,8 +41,10 @@ def login_view(request):
         return Response(error_template('credential error'), status=status.HTTP_400_BAD_REQUEST)
     else:
         login(request, user)
+        csrf_token = get_token(request)
         data = {
-            'username': user.username
+            'username': user.username,
+            'csrf_token': csrf_token
         }
         return Response(success_template(data=data), status=status.HTTP_200_OK)
 
