@@ -7,46 +7,53 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework.permissions import IsAuthenticated
 from account.models import Account
 from django.middleware.csrf import get_token
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 @api_view(['POST'])
 def registration_view(request):
     serializer = RegistrationSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(success_template(), status=status.HTTP_201_CREATED)
-    else:
-        return Response(error_template(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['POST'])
-def login_view(request):
-    serializer = LoginSerializer(data=request.data)
-    # check input validation
     if not serializer.is_valid(raise_exception=True):
         return
 
-    # validated
-    email = serializer.validated_data['email']
-    password = serializer.validated_data['password']
-    user_of_provided_email = Account.objects.filter(email=email)
+    user = serializer.save()
+    refresh = RefreshToken.for_user(user)
+    data = {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+        'username': user.username
+    }
+    return Response(success_template(data=data), status=status.HTTP_201_CREATED)
 
-    # check if email exists
-    if not user_of_provided_email.exists():
-        return Response(error_template('No active account found with the email provided'), status=status.HTTP_400_BAD_REQUEST)
 
-    # try log in
-    user = authenticate(request, email=email, password=password)
-    if user is None:
-        return Response(error_template('credential error'), status=status.HTTP_400_BAD_REQUEST)
-    else:
-        login(request, user)
-        csrf_token = get_token(request)
-        data = {
-            'username': user.username,
-            'csrf_token': csrf_token
-        }
-        return Response(success_template(data=data), status=status.HTTP_200_OK)
+# @api_view(['POST'])
+# def login_view(request):
+#     serializer = LoginSerializer(data=request.data)
+#     # check input validation
+#     if not serializer.is_valid(raise_exception=True):
+#         return
+#
+#     # validated
+#     email = serializer.validated_data['email']
+#     password = serializer.validated_data['password']
+#     user_of_provided_email = Account.objects.filter(email=email)
+#
+#     # check if email exists
+#     if not user_of_provided_email.exists():
+#         return Response(error_template('No active account found with the email provided'), status=status.HTTP_400_BAD_REQUEST)
+#
+#     # try log in
+#     user = authenticate(request, email=email, password=password)
+#     if user is None:
+#         return Response(error_template('credential error'), status=status.HTTP_400_BAD_REQUEST)
+#     else:
+#         login(request, user)
+#         csrf_token = get_token(request)
+#         data = {
+#             'username': user.username,
+#             'csrf_token': csrf_token
+#         }
+#         return Response(success_template(data=data), status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
@@ -55,11 +62,11 @@ def verify_session_view(request):
     return Response(success_template(), status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def logout_view(request):
-    logout(request)
-    return Response(success_template(), status=status.HTTP_200_OK)
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# def logout_view(request):
+#     logout(request)
+#     return Response(success_template(), status=status.HTTP_200_OK)
 
 
 @api_view(['POST'])
