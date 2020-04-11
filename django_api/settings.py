@@ -148,7 +148,10 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-    'EXCEPTION_HANDLER': 'response_templates.custom_exception_handler.custom_exception_handler'
+    'EXCEPTION_HANDLER': 'response_templates.custom_exception_handler.custom_exception_handler',
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer'
+    ]
 }
 
 AUTH_USER_MODEL = 'account.Account'
