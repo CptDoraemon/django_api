@@ -4,6 +4,7 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework.response import Response
 from response_templates.templates import success_template
 from rest_framework import status
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class CustomizedTokenViewBase(TokenViewBase):
@@ -16,8 +17,9 @@ class CustomizedTokenViewBase(TokenViewBase):
         except TokenError as e:
             raise InvalidToken(e.args[0])
 
-        data = success_template(data=serializer.validated_data)
-        return Response(data, status=status.HTTP_200_OK)
+        data = serializer.validated_data
+        data['username'] = serializer.user.username
+        return Response(success_template(data=data), status=status.HTTP_200_OK)
 
 
 # get token pair

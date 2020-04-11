@@ -15,15 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from jwt_token.views import CustomizedTokenObtainPairView, CustomizedTokenRefreshView
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # jwt_token login and refresh
-    path('api/token/', CustomizedTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/refresh/', CustomizedTokenRefreshView.as_view(), name='token_refresh'),
-    # #
     path('api/discussion_board/post/', include('posts.urls')),
     path('api/discussion_board/account/', include('account.urls')),
     path('api/discussion_board/comment/', include('comments.urls')),
