@@ -48,6 +48,12 @@ def login_view(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+def verify_session_view(request):
+    return Response(success_template(), status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def logout_view(request):
     logout(request)
     return Response(success_template(), status=status.HTTP_200_OK)
