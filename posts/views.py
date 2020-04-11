@@ -75,6 +75,9 @@ def all_posts_view(request):
         else PostWithLoginSerializer(all_posts, many=True, context={"user": request.user}).data
     )
 
+    print(all_posts_data)
+    print(success_template(data=all_posts_data))
+
     # for post in all_posts:
     #     # get all comments for this post
     #     comments = post.comment_set.filter(parent_comment=None).order_by('created')

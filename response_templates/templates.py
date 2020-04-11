@@ -12,4 +12,6 @@ def success_template(message=None, data=None):
     }
     if data:
         response['data'] = data.copy()
+    else:
+        response['data'] = []
     return response
