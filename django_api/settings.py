@@ -30,7 +30,7 @@ DEBUG = os.getenv("DEBUG") == 'True'
 
 ALLOWED_HOSTS = [
     'django-api-xiaoxihome.herokuapp.com',
-    '127.0.0.1:8000',
+    '127.0.0.1:8000'
 ]
 
 
@@ -220,8 +220,7 @@ if os.getenv("DEBUG") != 'True':
     }
 
 CORS_ORIGIN_WHITELIST = [
-    "https://example.com",
-    "https://sub.example.com",
     "http://localhost:3000",
-    "https://cptdoraemon.github.io"
+    "https://cptdoraemon.github.io",
+    "http://192.168.100.156:3000",
 ]
