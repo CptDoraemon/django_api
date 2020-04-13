@@ -117,6 +117,6 @@ def post_detail_view(request, pk):
         if request.user.is_anonymous
         else NestedCommentsWithLoginSerializer(first_level_comments, many=True, context={"user": request.user}).data
     )
-    data['comments'] = comments_data
+    data['comments_data'] = comments_data
 
     return Response(success_template(data=data), status=status.HTTP_200_OK)
