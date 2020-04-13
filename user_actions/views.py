@@ -8,8 +8,8 @@ from user_actions.serializers import LikeUpdateSerializer, SaveUpdateSerializer,
 from user_actions.models import UserActions
 from posts.models import Post
 from comments.models import Comment
-from comments.serializers import AllCommentsSerializer
-from posts.serializers import PostDetailBaseSerializer
+from comments.serializers import AllCommentsSerializer, CommentWithLoginSerializer
+from posts.serializers import PostDetailBaseSerializer, PostWithLoginSerializer
 
 
 def _toggle_like(action, user_action_instance, target, target_type):
@@ -92,7 +92,14 @@ def _update_generic_view(request, serializer, toggle_handler):
     # do toggle
     toggle_handler(action, this_user_action, target, target_type)
 
-    return Response(success_template(), status=status.HTTP_200_OK)
+    # return the updated target data
+    target_serializer = None
+    if target_type == TARGET_TYPE_CHOICES['comment']:
+        target_serializer = CommentWithLoginSerializer(target, context={"user": request.user})
+    elif target_type == TARGET_TYPE_CHOICES['post']:
+        target_serializer = PostWithLoginSerializer(target, context={"user": request.user})
+
+    return Response(success_template(data=target_serializer.data), status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])

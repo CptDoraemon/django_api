@@ -23,7 +23,7 @@ class AllCommentsSerializer(serializers.ModelSerializer):
 ##
 
 
-class _CommentBaseSerializer(serializers.ModelSerializer):
+class CommentBaseSerializer(serializers.ModelSerializer):
     owner = AccountBaseInfoSerializer()
     likes = serializers.IntegerField(source='liked_by.count', read_only=True)
     dislikes = serializers.IntegerField(source='disliked_by.count', read_only=True)
@@ -33,7 +33,7 @@ class _CommentBaseSerializer(serializers.ModelSerializer):
         exclude = ["is_deleted", "parent_post", "parent_comment"]
 
 
-class _CommentWithLoginSerializer(_CommentBaseSerializer):
+class CommentWithLoginSerializer(CommentBaseSerializer):
     is_liked = serializers.SerializerMethodField()
     is_saved = serializers.SerializerMethodField()
 
@@ -50,15 +50,15 @@ class _CommentWithLoginSerializer(_CommentBaseSerializer):
 
 
 # pass first level comments only
-class NestedCommentsBaseSerializer(_CommentBaseSerializer):
-    sub_comments = _CommentBaseSerializer(many=True)
+class NestedCommentsBaseSerializer(CommentBaseSerializer):
+    sub_comments = CommentBaseSerializer(many=True)
 
 
 # pass first level comments only
-class NestedCommentsWithLoginSerializer(_CommentWithLoginSerializer):
+class NestedCommentsWithLoginSerializer(CommentWithLoginSerializer):
     sub_comments = serializers.SerializerMethodField()
 
     def get_sub_comments(self, obj):
-        return _CommentWithLoginSerializer(getattr(obj, 'sub_comments'), many=True, context=self.context).data
+        return CommentWithLoginSerializer(getattr(obj, 'sub_comments'), many=True, context=self.context).data
 
 
