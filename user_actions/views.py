@@ -70,8 +70,8 @@ def save_update_view(request):
 
 def _update_generic_view(request, serializer, toggle_handler):
     serialized = serializer(data=request.data)
-    if not serialized.is_valid():
-        return Response(error_template(serialized.errors), status=status.HTTP_400_BAD_REQUEST)
+    if not serializer.is_valid(raise_exception=True):
+        return
 
     user = request.user
     this_user_action = UserActions.objects.get_or_create(user=user)[0]
