@@ -70,7 +70,7 @@ def save_update_view(request):
 
 def _update_generic_view(request, serializer, toggle_handler):
     serialized = serializer(data=request.data)
-    if not serializer.is_valid(raise_exception=True):
+    if not serialized.is_valid(raise_exception=True):
         return
 
     user = request.user
