@@ -1,13 +1,15 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from account.serializer import RegistrationSerializer, LoginSerializer, ResetPasswordSerializer
+from account.serializer import RegistrationSerializer, LoginSerializer, ResetPasswordSerializer, UpdateAvatarSerializer
 from response_templates.templates import success_template, error_template
 from django.contrib.auth import authenticate, login, logout
 from rest_framework.permissions import IsAuthenticated
 from account.models import Account
 from django.middleware.csrf import get_token
 from rest_framework_simplejwt.tokens import RefreshToken
+import os
+from storages.backends.s3boto3 import S3Boto3Storage
 
 
 @api_view(['POST'])
@@ -91,3 +93,42 @@ def reset_password_view(request):
         return Response(error_template(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def update_avatar_view(request):
+    serializer = UpdateAvatarSerializer(data=request.data)
+
+    if not serializer.is_valid(raise_exception=True):
+        return
+
+    file = serializer.validated_data['image']
+    user = request.user
+    file_name = 'avatar_' + user.username + os.path.splitext(file.name)[1]
+
+    # do your validation here e.g. file size/type check
+
+    # organize a path for the file in bucket
+    file_directory_within_bucket = 'avatars/'
+
+    # synthesize a full file path; note that we included the filename
+    file_path_within_bucket = os.path.join(
+        file_directory_within_bucket,
+        file_name
+    )
+
+    media_storage = S3Boto3Storage()
+    print(media_storage.endpoint_url)
+
+    if media_storage.exists(file_path_within_bucket):
+        # delete the old avatar if exists
+        media_storage.delete(file_path_within_bucket)
+
+    # save new avatar
+    media_storage.save(file_path_within_bucket, file)
+    file_url = media_storage.url(file_path_within_bucket)
+
+    # update user obj
+    user.avatar_url = file_url
+    user.save()
+
+    return Response(success_template(), status=status.HTTP_200_OK)

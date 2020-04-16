@@ -48,7 +48,12 @@ class ResetPasswordSerializer(serializers.Serializer):
 class AccountBaseInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['email', 'username']
+        fields = ['email', 'username', 'avatar_url']
+
+
+class UpdateAvatarSerializer(serializers.Serializer):
+
+    image = serializers.ImageField(allow_empty_file=False)
 
 
 
