@@ -235,8 +235,8 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 AWS_STORAGE_BUCKET_NAME = 'django-discussion-board'
 
-AWS_DEFAULT_ACL = None
-
 AWS_QUERYSTRING_AUTH = False
+
+AWS_DEFAULT_ACL = 'public-read'
 
 # AWS Related ends
