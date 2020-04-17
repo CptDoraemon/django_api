@@ -1,15 +1,17 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
-from account.serializer import RegistrationSerializer, LoginSerializer, ResetPasswordSerializer, UpdateAvatarSerializer
+from account.serializer import RegistrationSerializer, ResetPasswordSerializer, UpdateAvatarSerializer
 from response_templates.templates import success_template, error_template
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
-from account.models import Account
-from django.middleware.csrf import get_token
 from rest_framework_simplejwt.tokens import RefreshToken
-import os
 from storages.backends.s3boto3 import S3Boto3Storage
+import os
+from urllib.parse import urlparse
+import time
+from numpy import base_repr
+from account.utils.resize_image import resize_image
 
 
 @api_view(['POST'])
@@ -102,28 +104,36 @@ def update_avatar_view(request):
         return
 
     file = serializer.validated_data['image']
+
+    # resize, optimize and check size
+    file = resize_image(file, file.name, 200, 200)
+    if file.size > 5 * 1024 * 1024:
+        return Response(error_template('Image file too big'), status=status.HTTP_200_OK)
+
+    # vars
     user = request.user
-    file_name = 'avatar_' + user.username + os.path.splitext(file.name)[1]
-
-    # do your validation here e.g. file size/type check
-
-    # organize a path for the file in bucket
     file_directory_within_bucket = 'avatars/'
+    old_avatar_url = user.avatar_url
+    media_storage = S3Boto3Storage()
 
-    # synthesize a full file path; note that we included the filename
+    # delete old avatar if exists
+    if len(old_avatar_url) > 0:
+        url = urlparse(old_avatar_url)
+        old_avatar_filename = os.path.basename(url.path)
+        old_avatar_file_path_within_bucket = os.path.join(
+            file_directory_within_bucket,
+            old_avatar_filename
+        )
+        if media_storage.exists(old_avatar_file_path_within_bucket):
+            media_storage.delete(old_avatar_file_path_within_bucket)
+
+    # save new avatar
+    random_string = base_repr(int(time.time()*1000), 36)
+    file_name = 'avatar_' + user.username + '_' + random_string + os.path.splitext(file.name)[1]
     file_path_within_bucket = os.path.join(
         file_directory_within_bucket,
         file_name
     )
-
-    media_storage = S3Boto3Storage()
-    print(media_storage.endpoint_url)
-
-    if media_storage.exists(file_path_within_bucket):
-        # delete the old avatar if exists
-        media_storage.delete(file_path_within_bucket)
-
-    # save new avatar
     media_storage.save(file_path_within_bucket, file)
     file_url = media_storage.url(file_path_within_bucket)
 
