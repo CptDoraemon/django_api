@@ -41,3 +41,8 @@ class PostDetailBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
         fields = "__all__"
+
+
+class ImageSerializer(serializers.Serializer):
+
+    image = serializers.ImageField(allow_empty_file=False)

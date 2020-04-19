@@ -3,11 +3,12 @@ from rest_framework import status
 from rest_framework.response import Response
 from posts.models import Post
 from comments.models import Comment
-from posts.serializers import PostCreationSerializer, PostBaseSerializer, PostWithLoginSerializer
+from posts.serializers import PostCreationSerializer, PostBaseSerializer, PostWithLoginSerializer, ImageSerializer
 from comments.serializers import NestedCommentsBaseSerializer, NestedCommentsWithLoginSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from response_templates.templates import success_template, error_template
+from posts.utils.validate_and_save_image import validate_and_save_image
 
 
 @api_view(['POST'])
@@ -17,12 +18,26 @@ def post_creation_view(request):
     if not serializer.is_valid(raise_exception=True):
         return
 
+    # part save to get pk first:
     user = request.user
+    content = serializer.validated_data['content']
     post = Post(
         title=serializer.validated_data['title'],
-        content=serializer.validated_data['content'],
+        content=content,
         owner=user
     )
+    post.save()
+    post_id = post.pk
+
+    # save image to storage
+    # replace objectURLs in content with storage url
+    if len(request.FILES) > 0:
+        for i, file_string in enumerate(request.FILES):
+            file = request.FILES[file_string]
+            image_url = validate_and_save_image(file, post_id, i)
+            content.replace(file.name, image_url)
+
+    post.content = content
     post.save()
     return Response(success_template(data={'post_id': post.pk}), status=status.HTTP_200_OK)
 
