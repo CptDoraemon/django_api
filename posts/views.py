@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from response_templates.templates import success_template, error_template
 from posts.utils.process_image import validate_and_and_optimize_images, save_image
+import os
 
 
 @api_view(['POST'])
@@ -38,7 +39,8 @@ def post_creation_view(request):
     if validated_optimized_images is not None:
         for i, file in enumerate(validated_optimized_images):
             image_url = save_image(file, post_id, i)
-            content.replace(file.name, image_url)
+            filename_without_ext = os.path.splitext(file.name)[0]
+            content = content.replace(filename_without_ext, image_url)
         post.content = content
         post.save()
 
