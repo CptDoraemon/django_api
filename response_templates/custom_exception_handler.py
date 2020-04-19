@@ -26,7 +26,7 @@ def custom_exception_handler(exc, context):
             first_value = data[first_key][0]  # it's a list
             message = "{0}: {1}".format(first_key.capitalize(), first_value.capitalize())
             response.data = error_template(message)
-        except KeyError:
+        except (KeyError, AttributeError):
             response.data = error_template('Validation error')
 
     if isinstance(exc, AuthenticationFailed):
