@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from response_templates.templates import success_template, error_template
 from posts.utils.process_image import validate_and_and_optimize_images, save_image
 from posts.utils.sanitize_html import sanitize_html
+import os
 
 
 @api_view(['POST'])
@@ -95,9 +96,6 @@ def all_posts_view(request):
         if request.user.is_anonymous
         else PostWithLoginSerializer(all_posts, many=True, context={"user": request.user}).data
     )
-
-    print(all_posts_data)
-    print(success_template(data=all_posts_data))
 
     # for post in all_posts:
     #     # get all comments for this post
