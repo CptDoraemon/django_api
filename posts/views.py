@@ -9,7 +9,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from response_templates.templates import success_template, error_template
 from posts.utils.process_image import validate_and_and_optimize_images, save_image
-import os
+from posts.utils.sanitize_html import sanitize_html
 
 
 @api_view(['POST'])
@@ -26,6 +26,7 @@ def post_creation_view(request):
     # part save to get pk first:
     user = request.user
     content = serializer.validated_data['content']
+    content = sanitize_html(content)
     post = Post(
         title=serializer.validated_data['title'],
         content=content,
