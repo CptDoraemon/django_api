@@ -239,4 +239,8 @@ AWS_QUERYSTRING_AUTH = False
 
 AWS_DEFAULT_ACL = 'public-read'
 
+AWS_S3_OBJECT_PARAMETERS = {
+    'CacheControl': 'max-age=31536000'
+}
+
 # AWS Related ends
