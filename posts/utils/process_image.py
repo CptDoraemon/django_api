@@ -75,3 +75,4 @@ def delete_image_folder(post_id):
 
     # delete
     media_storage.bucket.objects.filter(Prefix=directory).delete()
+

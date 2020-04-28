@@ -20,6 +20,7 @@ def post_creation_view(request):
     if not serializer.is_valid(raise_exception=True):
         return
 
+    # validate image before save anything
     validated_optimized_images = None
     if len(request.FILES) > 0:
         validated_optimized_images = validate_and_and_optimize_images(request.FILES)
@@ -65,8 +66,28 @@ def post_edit_view(request, post_id):
     if user != post.owner:
         return Response(error_template('not authorized'), status=status.HTTP_403_FORBIDDEN)
 
+    # validate image before save anything
+    validated_optimized_images = None
+    if len(request.FILES) > 0:
+        validated_optimized_images = validate_and_and_optimize_images(request.FILES)
+
+    # update title
     post.title = serializer.validated_data['title']
-    post.content = serializer.validated_data['content']
+
+    # save image to storage
+    # replace objectURLs in content with storage url
+    content = serializer.validated_data['content']
+    content = sanitize_html(content)
+    if validated_optimized_images is not None:
+        for i, file in enumerate(validated_optimized_images):
+            image_url = save_image(file, post_id, i)
+            filename_without_ext = os.path.splitext(file.name)[0]
+            content = content.replace(filename_without_ext, image_url)
+
+    # TODO: clean up deleted images in storage
+
+    # save updated post
+    post.content = content
     post.save()
     return Response(success_template(data={'post_id': post.pk}), status=status.HTTP_200_OK)
 
