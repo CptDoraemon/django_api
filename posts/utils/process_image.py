@@ -66,3 +66,12 @@ def save_image(file, post_id, file_index):
     media_storage.save(file_path_within_bucket, file)
 
     return media_storage.url(file_path_within_bucket)
+
+
+def delete_image_folder(post_id):
+    # vars
+    directory = 'post_images/{0}/'.format(post_id)
+    media_storage = S3Boto3Storage()
+
+    # delete
+    media_storage.bucket.objects.filter(Prefix=directory).delete()

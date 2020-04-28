@@ -8,7 +8,7 @@ from comments.serializers import NestedCommentsBaseSerializer, NestedCommentsWit
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from response_templates.templates import success_template, error_template
-from posts.utils.process_image import validate_and_and_optimize_images, save_image
+from posts.utils.process_image import validate_and_and_optimize_images, save_image, delete_image_folder
 from posts.utils.sanitize_html import sanitize_html
 import os
 
@@ -83,8 +83,9 @@ def post_deletion_view(request, post_id):
     if user != post.owner:
         return Response(error_template('not authorized'), status=status.HTTP_403_FORBIDDEN)
 
-    post.is_deleted = True
-    post.save()
+    post.delete()
+    delete_image_folder(post_id)
+
     return Response(success_template(), status=status.HTTP_200_OK)
 
 
