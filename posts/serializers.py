@@ -6,7 +6,7 @@ from account.serializer import AccountBaseInfoSerializer
 class PostCreationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
-        fields = ['title', 'content']
+        fields = ['title', 'content', 'tag']
         # owner = serializers.ReadOnlyField(source='owner.username')
 
 

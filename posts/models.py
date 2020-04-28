@@ -4,6 +4,15 @@ from django.utils.text import slugify
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
 
+TAG_CHOICES = [
+    ('MISC', 'Miscellaneous'),
+    ('WEB DEVELOPMENT', 'Web Development'),
+    ('PHOTO', 'Photo'),
+    ('NEWS', 'News'),
+    ('GAME', 'Game'),
+    ('TEST', 'Test'),
+]
+
 
 class Post(models.Model):
     title = models.TextField(max_length=100, null=False, blank=False)
@@ -12,6 +21,9 @@ class Post(models.Model):
     edited = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_deleted = models.BooleanField(default=False)
+    tag = models.CharField(max_length=20,
+                           choices=TAG_CHOICES,
+                           default=TAG_CHOICES[0][0])
 
     def __str__(self):
         return self.title

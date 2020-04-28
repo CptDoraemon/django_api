@@ -1,7 +1,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import status
 from rest_framework.response import Response
-from posts.models import Post
+from posts.models import Post, TAG_CHOICES
 from comments.models import Comment
 from posts.serializers import PostCreationSerializer, PostBaseSerializer, PostWithLoginSerializer
 from comments.serializers import NestedCommentsBaseSerializer, NestedCommentsWithLoginSerializer
@@ -143,3 +143,8 @@ def post_detail_view(request, pk):
     data['comments_data'] = comments_data
 
     return Response(success_template(data=data), status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def post_tag_list_view(request):
+    return Response(success_template(data=TAG_CHOICES), status=status.HTTP_200_OK)
