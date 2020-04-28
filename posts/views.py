@@ -32,6 +32,7 @@ def post_creation_view(request):
     post = Post(
         title=serializer.validated_data['title'],
         content=content,
+        tag=serializer.validated_data['tag'],
         owner=user
     )
     post.save()
@@ -71,8 +72,9 @@ def post_edit_view(request, post_id):
     if len(request.FILES) > 0:
         validated_optimized_images = validate_and_and_optimize_images(request.FILES)
 
-    # update title
+    # update title and tag
     post.title = serializer.validated_data['title']
+    post.tag = serializer.validated_data['tag'],
 
     # save image to storage
     # replace objectURLs in content with storage url
