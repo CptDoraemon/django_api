@@ -97,24 +97,6 @@ def all_posts_view(request):
         else PostWithLoginSerializer(all_posts, many=True, context={"user": request.user}).data
     )
 
-    # for post in all_posts:
-    #     # get all comments for this post
-    #     comments = post.comment_set.filter(parent_comment=None).order_by('created')
-    #     post_data = AllPostsSerializer(post).data
-    #
-    #     comments_data = []
-    #     # get sub comments for this comment
-    #     for comment in comments:
-    #         sub_comments = comment.comment_set.all().order_by('created')
-    #         comment_data = AllCommentsSerializer(comment).data
-    #         comment_data['comments'] = []
-    #         sub_comments_data = AllCommentsSerializer(sub_comments, many=True).data
-    #         comment_data['comments'].append(sub_comments_data)
-    #         comments_data.append(comment_data)
-    #
-    #     post_data['comments'] = comments_data
-    #     all_posts_data.append(post_data)
-
     return Response(success_template(data=all_posts_data), status=status.HTTP_200_OK)
 
 

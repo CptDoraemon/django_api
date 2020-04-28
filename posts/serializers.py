@@ -18,12 +18,13 @@ class PostBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = "__all__"
+        exclude = ['is_deleted']
 
 
 class PostWithLoginSerializer(PostBaseSerializer):
     is_liked = serializers.SerializerMethodField()
     is_saved = serializers.SerializerMethodField()
+    is_owner = serializers.SerializerMethodField()
 
     def get_is_liked(self, obj):
         result = 0
@@ -35,6 +36,9 @@ class PostWithLoginSerializer(PostBaseSerializer):
 
     def get_is_saved(self, obj):
         return obj.saved_by.filter(pk=self.context.get('user').pk).exists()
+
+    def get_is_owner(self, obj):
+        return obj.owner.pk == self.context.get('user').pk
 
 
 class PostDetailBaseSerializer(serializers.ModelSerializer):

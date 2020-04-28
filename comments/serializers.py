@@ -36,6 +36,7 @@ class CommentBaseSerializer(serializers.ModelSerializer):
 class CommentWithLoginSerializer(CommentBaseSerializer):
     is_liked = serializers.SerializerMethodField()
     is_saved = serializers.SerializerMethodField()
+    is_owner = serializers.SerializerMethodField()
 
     def get_is_liked(self, obj):
         result = 0
@@ -47,6 +48,9 @@ class CommentWithLoginSerializer(CommentBaseSerializer):
 
     def get_is_saved(self, obj):
         return obj.saved_by.filter(pk=self.context.get('user').pk).exists()
+
+    def get_is_owner(self, obj):
+        return obj.owner.pk == self.context.get('user').pk
 
 
 # pass first level comments only
