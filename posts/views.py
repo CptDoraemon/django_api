@@ -74,7 +74,7 @@ def post_edit_view(request, post_id):
 
     # update title and tag
     post.title = serializer.validated_data['title']
-    post.tag = serializer.validated_data['tag'],
+    post.tag = serializer.validated_data['tag']
 
     # save image to storage
     # replace objectURLs in content with storage url
@@ -115,6 +115,13 @@ def post_deletion_view(request, post_id):
 @api_view(['GET'])
 def all_posts_view(request):
     all_posts = Post.objects.filter(is_deleted=False).order_by('-created')
+
+    # possible query param tag
+    tag = request.query_params.get('tag', None)
+    print(tag)
+    if tag is not None:
+        all_posts = all_posts.filter(tag=tag)
+
     all_posts_data = (
         PostBaseSerializer(all_posts, many=True).data
         if request.user.is_anonymous

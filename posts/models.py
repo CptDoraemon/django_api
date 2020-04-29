@@ -15,6 +15,7 @@ TAG_CHOICES = [
 
 
 class Post(models.Model):
+
     title = models.TextField(max_length=100, null=False, blank=False)
     content = models.TextField(max_length=5000, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
