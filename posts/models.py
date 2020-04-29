@@ -16,8 +16,8 @@ TAG_CHOICES = [
 
 class Post(models.Model):
 
-    title = models.TextField(max_length=100, null=False, blank=False)
-    content = models.TextField(max_length=5000, null=False, blank=False)
+    title = models.TextField(max_length=200, null=False, blank=False)
+    content = models.TextField(max_length=50000, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     edited = models.DateTimeField(auto_now=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
