@@ -12,7 +12,9 @@ ALLOWED_TAGS = [
     'h3',
     'h4',
     'h5',
-    'div'
+    'div',
+    'br',
+    's'
 ]
 
 
