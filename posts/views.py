@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from posts.models import Post, TAG_CHOICES
 from comments.models import Comment
-from posts.serializers import PostCreationSerializer, PostBaseSerializer, PostWithLoginSerializer
+from posts.serializers import PostCreationSerializer, PostBaseSerializer, PostWithLoginSerializer, AllPostsViewQueryParamSerializer
 from comments.serializers import NestedCommentsBaseSerializer, NestedCommentsWithLoginSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -126,20 +126,22 @@ def all_posts_view(request):
         floored = floor(total / per_page)
         return floored if floored == total else floored + 1
 
-    # constants
-    default_limit = 5  # post per page
-
     # possible query params
-    tag = request.query_params.get('tag', None)
-    page = int(request.query_params.get('page', 1))
-    limit = int(request.query_params.get('limit', default_limit))
+    query = AllPostsViewQueryParamSerializer(data=request.query_params)
+    query.is_valid(raise_exception=True)
+    page = query.validated_data.get('page')
+    limit = query.validated_data.get('limit')
+    tag = query.validated_data.get('tag')
+    sort_by = query.validated_data.get('sort_by')
+    sort_order_prefix = '-' if query.validated_data.get('sort_order') == 'desc' else ''
+    sort_order_string = f'{sort_order_prefix}{sort_by}'
 
     # get requested posts
     offset = (page - 1) * limit
     post_filter = {"is_deleted": False}
     if tag is not None:
         post_filter["tag"] = tag
-    all_posts = Post.objects.filter(**post_filter).order_by('-created')[offset:offset + limit]
+    all_posts = Post.objects.filter(**post_filter).order_by(sort_order_string)[offset:offset + limit]
     total_pages = get_page_integer(Post.objects.count(), limit)
 
     # serialize response
