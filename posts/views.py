@@ -188,13 +188,10 @@ def post_detail_view(request, pk):
 
 @api_view(['GET'])
 def post_tag_list_view(request):
-    print(TAGS)
     tags_dict = {tag: 0 for tag in TAGS}
-    print(tags_dict)
     tags_count = Post.objects.all().values('tag').annotate(total=Count('tag'))
     for obj in tags_count:
         tags_dict[obj['tag']] = obj['total']
-    print(tags_dict)
 
     return_list = []
     for k, v in tags_dict.items():
