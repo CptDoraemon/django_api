@@ -19,12 +19,13 @@ class Post(models.Model):
     title = models.TextField(max_length=200, null=False, blank=False)
     content = models.TextField(max_length=200000, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
-    edited = models.DateTimeField(auto_now=True)
+    edited = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_deleted = models.BooleanField(default=False)
     tag = models.CharField(max_length=20,
                            choices=TAG_CHOICES,
                            default=TAG_CHOICES[0][0])
+    view_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.title

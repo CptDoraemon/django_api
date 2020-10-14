@@ -13,7 +13,10 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 import os
 from datetime import timedelta
 import dj_database_url
-import django_heroku
+# uncomment following lines before deploy
+# import django_heroku
+# # Activate Django-Heroku.
+# django_heroku.settings(locals())
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -30,7 +33,7 @@ DEBUG = os.getenv("DEBUG") == 'True'
 
 ALLOWED_HOSTS = [
     'django-api-xiaoxihome.herokuapp.com',
-    '127.0.0.1:8000'
+    '127.0.0.1'
 ]
 
 
@@ -181,9 +184,6 @@ SIMPLE_JWT = {
     # 'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     # 'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
-
-# Activate Django-Heroku.
-django_heroku.settings(locals())
 
 if os.getenv("DEBUG") != 'True':
     LOGGING = {

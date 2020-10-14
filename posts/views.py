@@ -1,4 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
+from django.utils import timezone
+from math import floor
 from rest_framework import status
 from rest_framework.response import Response
 from posts.models import Post, TAG_CHOICES
@@ -90,6 +92,9 @@ def post_edit_view(request, post_id):
 
     # save updated post
     post.content = content
+    post.edited = timezone.now()
+
+    # update last edited
     post.save()
     return Response(success_template(data={'post_id': post.pk}), status=status.HTTP_200_OK)
 
@@ -114,21 +119,42 @@ def post_deletion_view(request, post_id):
 
 @api_view(['GET'])
 def all_posts_view(request):
-    all_posts = Post.objects.filter(is_deleted=False).order_by('-created')
+    # helpers
+    def get_page_integer(total, per_page):
+        if per_page == 0:
+            return 0
+        floored = floor(total / per_page)
+        return floored if floored == total else floored + 1
 
-    # possible query param tag
+    # constants
+    default_limit = 5  # post per page
+
+    # possible query params
     tag = request.query_params.get('tag', None)
-    print(tag)
-    if tag is not None:
-        all_posts = all_posts.filter(tag=tag)
+    page = int(request.query_params.get('page', 1))
+    limit = int(request.query_params.get('limit', default_limit))
 
+    # get requested posts
+    offset = (page - 1) * limit
+    post_filter = {"is_deleted": False}
+    if tag is not None:
+        post_filter["tag"] = tag
+    all_posts = Post.objects.filter(**post_filter).order_by('-created')[offset:offset + limit]
+    total_pages = get_page_integer(Post.objects.count(), limit)
+
+    # serialize response
     all_posts_data = (
         PostBaseSerializer(all_posts, many=True).data
         if request.user.is_anonymous
         else PostWithLoginSerializer(all_posts, many=True, context={"user": request.user}).data
     )
+    response_data = {
+        "data": all_posts_data,
+        "total_pages": total_pages,
+        "current_page": page
+    }
 
-    return Response(success_template(data=all_posts_data), status=status.HTTP_200_OK)
+    return Response(success_template(data=response_data), status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -137,6 +163,9 @@ def post_detail_view(request, pk):
         return Response(error_template('no such post'), status=status.HTTP_404_NOT_FOUND)
 
     post = Post.objects.get(pk=pk)
+    post.view_count = post.view_count + 1
+    post.save()
+
     data = (
         PostBaseSerializer(post).data
         if request.user.is_anonymous
