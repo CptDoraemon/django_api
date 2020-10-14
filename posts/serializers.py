@@ -18,7 +18,7 @@ class PostBaseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        exclude = ['is_deleted']
+        exclude = ['is_deleted', 'content']
 
 
 class PostWithLoginSerializer(PostBaseSerializer):
