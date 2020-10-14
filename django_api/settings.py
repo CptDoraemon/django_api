@@ -15,8 +15,6 @@ from datetime import timedelta
 import dj_database_url
 # uncomment following lines before deploy
 import django_heroku
-# Activate Django-Heroku.
-django_heroku.settings(locals())
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -184,6 +182,9 @@ SIMPLE_JWT = {
     # 'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
     # 'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
+
+# Activate Django-Heroku.
+django_heroku.settings(locals())
 
 if os.getenv("DEBUG") != 'True':
     LOGGING = {
