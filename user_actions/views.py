@@ -9,7 +9,7 @@ from user_actions.models import UserActions
 from posts.models import Post
 from comments.models import Comment
 from comments.serializers import AllCommentsSerializer, CommentWithLoginSerializer
-from posts.serializers import PostDetailBaseSerializer, PostWithLoginSerializer
+from posts.serializers import PostDetailSerializer, WithLoginPostDetailSerializer
 
 
 def _toggle_like(action, user_action_instance, target, target_type):
@@ -97,7 +97,7 @@ def _update_generic_view(request, serializer, toggle_handler):
     if target_type == TARGET_TYPE_CHOICES['comment']:
         target_serializer = CommentWithLoginSerializer(target, context={"user": request.user})
     elif target_type == TARGET_TYPE_CHOICES['post']:
-        target_serializer = PostWithLoginSerializer(target, context={"user": request.user})
+        target_serializer = WithLoginPostDetailSerializer(target, context={"user": request.user})
 
     return Response(success_template(data=target_serializer.data), status=status.HTTP_200_OK)
 
@@ -142,11 +142,11 @@ def _all_generic_view(request, comment_field_string, post_field_string):
         comments = AllCommentsSerializer(getattr(this_user_action, comment_field_string), many=True).data
         data['comments'] = comments
     elif category == 'post':
-        posts = PostDetailBaseSerializer(getattr(this_user_action, post_field_string), many=True).data
+        posts = PostDetailSerializer(getattr(this_user_action, post_field_string), many=True).data
         data['posts'] = posts
     else:
         comments = AllCommentsSerializer(getattr(this_user_action, comment_field_string), many=True).data
-        posts = PostDetailBaseSerializer(getattr(this_user_action, post_field_string), many=True).data
+        posts = PostDetailSerializer(getattr(this_user_action, post_field_string), many=True).data
         data['comments'] = comments
         data['posts'] = posts
 

@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.response import Response
 from posts.models import Post, TAGS
 from comments.models import Comment
-from posts.serializers import PostCreationSerializer, PostBaseSerializer, PostWithLoginSerializer, AllPostsViewQueryParamSerializer
+from posts.serializers import PostCreationSerializer, AllPostsViewQueryParamSerializer, PostDetailSerializer, PostListSerializer, WithLoginPostListSerializer, WithLoginPostDetailSerializer
 from comments.serializers import NestedCommentsBaseSerializer, NestedCommentsWithLoginSerializer
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -147,9 +147,9 @@ def all_posts_view(request):
 
     # serialize response
     all_posts_data = (
-        PostBaseSerializer(all_posts, many=True).data
+        PostListSerializer(all_posts, many=True).data
         if request.user.is_anonymous
-        else PostWithLoginSerializer(all_posts, many=True, context={"user": request.user}).data
+        else WithLoginPostListSerializer(all_posts, many=True, context={"user": request.user}).data
     )
     response_data = {
         "posts": all_posts_data,
@@ -170,9 +170,9 @@ def post_detail_view(request, pk):
     post.save()
 
     data = (
-        PostBaseSerializer(post).data
+        PostDetailSerializer(post).data
         if request.user.is_anonymous
-        else PostWithLoginSerializer(post, context={"user": request.user}).data
+        else WithLoginPostDetailSerializer(post, context={"user": request.user}).data
     )
 
     first_level_comments = Comment.objects.filter(parent_comment=None, parent_post=pk)
