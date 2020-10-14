@@ -142,7 +142,7 @@ def all_posts_view(request):
     if tag is not None:
         post_filter["tag"] = tag
     all_posts = Post.objects.filter(**post_filter).order_by(sort_order_string)[offset:offset + limit]
-    total_pages = get_page_integer(Post.objects.count(), limit)
+    total_pages = get_page_integer(Post.objects.filter(**post_filter).count(), limit)
 
     # serialize response
     all_posts_data = (
