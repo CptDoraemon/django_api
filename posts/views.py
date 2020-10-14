@@ -151,7 +151,7 @@ def all_posts_view(request):
         else PostWithLoginSerializer(all_posts, many=True, context={"user": request.user}).data
     )
     response_data = {
-        "data": all_posts_data,
+        "posts": all_posts_data,
         "total_pages": total_pages,
         "current_page": page
     }
