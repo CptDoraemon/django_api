@@ -12,6 +12,7 @@ TAG_CHOICES = [
     ('GAME', 'Game'),
     ('TEST', 'Test'),
 ]
+TAGS = map(lambda pair: pair[0], TAG_CHOICES)
 
 
 class Post(models.Model):

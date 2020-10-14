@@ -3,7 +3,7 @@ from django.utils import timezone
 from math import floor
 from rest_framework import status
 from rest_framework.response import Response
-from posts.models import Post, TAG_CHOICES
+from posts.models import Post, TAGS
 from comments.models import Comment
 from posts.serializers import PostCreationSerializer, PostBaseSerializer, PostWithLoginSerializer, AllPostsViewQueryParamSerializer
 from comments.serializers import NestedCommentsBaseSerializer, NestedCommentsWithLoginSerializer
@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from response_templates.templates import success_template, error_template
 from posts.utils.process_image import validate_and_and_optimize_images, save_image, delete_image_folder
 from posts.utils.sanitize_html import sanitize_html
+from django.db.models import Count
 import os
 
 
@@ -187,4 +188,15 @@ def post_detail_view(request, pk):
 
 @api_view(['GET'])
 def post_tag_list_view(request):
-    return Response(success_template(data=TAG_CHOICES), status=status.HTTP_200_OK)
+    tags_dict = {tag: 0 for tag in TAGS}
+    tags_count = Post.objects.all().values('tag').annotate(total=Count('tag'))
+    for obj in tags_count:
+        tags_dict[obj['tag']] = obj['total']
+
+    return_list = []
+    for k, v in tags_dict.items():
+        return_list.append({
+            'tag': k,
+            'count': v
+        })
+    return Response(success_template(data=return_list), status=status.HTTP_200_OK)
