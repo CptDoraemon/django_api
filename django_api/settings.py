@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'posts.apps.PostsConfig',
     'account',
     'comments',
-    'user_actions'
+    'user_actions',
+    'start_up.apps.StartUpConfig'
 ]
 
 MIDDLEWARE = [
