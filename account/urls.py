@@ -3,7 +3,7 @@ from account import views
 from jwt_token.views import CustomizedTokenObtainPairView, CustomizedTokenRefreshView
 
 urlpatterns = [
-    path('register/', views.registration_view),
+    # path('register/', views.registration_view),
     # path('login/', views.login_view),
     path('verify_session/', views.verify_session_view),
     # path('logout/', views.logout_view),
