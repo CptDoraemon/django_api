@@ -8,4 +8,6 @@ urlpatterns = [
     path('edit/<int:post_id>/', views.post_edit_view, name='update post'),
     path('delete/<int:post_id>/', views.post_deletion_view, name='delete post'),
     path('tag-list/', views.post_tag_list_view, name='post tag list'),
+    path('pin/', views.pin_post_view, name='pin post'),
+    path('pinned-posts/', views.pinned_posts_view, name='all pinned posts'),
 ]

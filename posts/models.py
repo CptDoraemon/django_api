@@ -1,8 +1,10 @@
+from email.policy import default
 from django.db import models
 from django.conf import settings
 from django.utils.text import slugify
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
+from django.utils import timezone
 
 TAG_CHOICES = [
     ('MISC', 'Miscellaneous'),
@@ -27,6 +29,8 @@ class Post(models.Model):
                            choices=TAG_CHOICES,
                            default=TAG_CHOICES[0][0])
     view_count = models.IntegerField(default=0)
+    is_pinned = models.BooleanField(default=False)
+    pinned_date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.title

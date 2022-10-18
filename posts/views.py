@@ -142,6 +142,12 @@ def all_posts_view(request):
     post_filter = {"is_deleted": False}
     if tag is not None:
         post_filter["tag"] = tag
+
+    # sort by view count is used by showing popular posts
+    # include pinned posts to count popular
+    if sort_by != "view_count":
+        post_filter["is_pinned"] = False
+
     all_posts = Post.objects.defer('content').filter(**post_filter).order_by(sort_order_string)[offset:offset + limit]
     total_pages = get_page_integer(Post.objects.filter(**post_filter).count(), limit)
 
@@ -200,3 +206,44 @@ def post_tag_list_view(request):
             'count': v
         })
     return Response(success_template(data=return_list), status=status.HTTP_200_OK)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def pin_post_view(request):
+    user = request.user
+    is_pinned = request.data.get('isPinned')
+    post_id = request.data.get('id')
+
+    try:
+        post = Post.objects.get(pk=post_id)
+    except ObjectDoesNotExist:
+        return Response(error_template('not authorized'), status=status.HTTP_403_FORBIDDEN)
+
+    if user != post.owner:
+        return Response(error_template('not authorized'), status=status.HTTP_403_FORBIDDEN)
+
+    post.is_pinned = is_pinned
+    if is_pinned:
+        post.pinned_date = timezone.now()
+    post.save()
+    response_data = {is_pinned: is_pinned}
+
+    return Response(success_template(data=response_data), status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def pinned_posts_view(request):
+
+
+    all_posts = Post.objects.defer('content').filter(is_pinned=True).order_by('pinned_date')
+
+    # serialize response
+    all_posts_data = (
+        PostListSerializer(all_posts, many=True).data
+        if request.user.is_anonymous
+        else WithLoginPostListSerializer(all_posts, many=True, context={"user": request.user}).data
+    )
+    response_data = {
+        "posts": all_posts_data
+    }
+
+    return Response(success_template(data=response_data), status=status.HTTP_200_OK)
