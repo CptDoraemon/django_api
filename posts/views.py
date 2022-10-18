@@ -226,7 +226,7 @@ def pin_post_view(request):
     if is_pinned:
         post.pinned_date = timezone.now()
     post.save()
-    response_data = {is_pinned: is_pinned}
+    response_data = {"is_pinned": is_pinned}
 
     return Response(success_template(data=response_data), status=status.HTTP_200_OK)
 
